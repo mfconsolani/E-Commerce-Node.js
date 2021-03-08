@@ -12,8 +12,6 @@ import { Carrito } from './constructorCarrito';
 
 const app:Application = express();
 
-const PORT = process.env.PORT || 8080
-
 export const admin = true;
 
 export let instanciaProductos = new Productos([{
@@ -28,14 +26,14 @@ export let instanciaProductos = new Productos([{
 }]);
 
 export let instanciaCarrito = new Carrito([{
-    id: 2, 
-    timestamp: "3/7/2021, 6:53:25 PM",
-    nombre: "tablet",
-    descripcion: "una tablet cualquiera",
-    codigo: "984395843maldmassd",
-    foto: "/url/a/una/foto/del/tablet",
-    precio: 85620, 
-    stock: 32,
+    id: 2,
+    timestamp: "3/8/2021, 3:55:49 PM",
+    nombre: "Lenovo T14",
+    descripcion: "La computadora mas sarpada del momento",
+    codigo: "94389n129321",
+    foto: "/url/a/una/foto/de/la/lenovo",
+    precio: 350000,
+    stock: 150,
     cantidad: 1
 }])
 
@@ -50,9 +48,8 @@ app.use('/carrito', carritoRoutes);
 
 // Server
 
-
-const server = app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`)
+const server = app.listen(process.env.PORT || 8080, () => {
+    console.log(`Server listening on port ${process.env.PORT || 8080}`)
 });
 
 

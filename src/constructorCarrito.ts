@@ -93,9 +93,9 @@ export class Carrito {
 
         let itemTarget:Item = this.productosEnCarrito.filter(item => (item.id === id))[0]
 
-        if (itemTarget.cantidad === 0){
+        if (!itemTarget){
 
-            return res.status(200).json({ Alerta: 'Producto no encontrado en carrito' })
+            return res.status(404).json({ Error: 'Producto no encontrado en carrito' })
 
         } else if (id !== 0 && this.productosEnCarrito.length && itemTarget.cantidad === 1){
 
@@ -103,7 +103,7 @@ export class Carrito {
 
             res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
 
-        } else if (itemTarget.cantidad !== undefined && itemTarget.cantidad > 0 ){
+        } else if (itemTarget.cantidad !== undefined && itemTarget.cantidad > 1 ){
 
             itemTarget.cantidad -= 1
     

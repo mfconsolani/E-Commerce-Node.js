@@ -1,6 +1,1 @@
-1. Ver forma de validar que cada producto que ingrese tenga un formato de interface Item
-2. Validar que cada propiedad del Item que ingresa esta lleno
-3. Ver el tema de la propiedad stock: sumar uno cuando se agrega, borrar uno cuando se haga un delete, agregar un metodo para modificar el stock directamente
-4. Configurar para que use puerto 8080 o el establecido por el host
-5. Corroborar si donde usé filter podria usar map
-6. Para agregar productos en el constructor de productos, chequear si puedo mapear los id, buscar el mayor, y sumarle uno.
+1. Avisar a malena que el carrito almacena un array de productos y no solo un producto y que a su vez, cada producto del carrito tiene una propiedad adicional llamada "cantidad" referida a las unidades de ese mismo producto que hay en el carrito. Si el usuario quiere agregar ese producto y ya esta en el carrito, se le suma una unidad. Y si lo quiere borrar, se le resta una unidad por cada petición y al llegar a 0 se elimina completamente del carrito. 

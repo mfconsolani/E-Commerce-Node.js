@@ -108,7 +108,7 @@ export class Productos {
 
             this.database = this.database.filter(item => item.id !== itemTarget.id)
 
-            res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
+            return res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
         }
         
         return res.status(200).json({ Alerta: 'producto no encontrado' })
