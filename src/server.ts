@@ -14,6 +14,8 @@ const app:Application = express();
 
 const PORT = process.env.PORT || 8080
 
+export const admin = true;
+
 export let instanciaProductos = new Productos([{
     id: 1, 
     timestamp: "3/7/2021, 6:53:25 PM",
@@ -33,7 +35,8 @@ export let instanciaCarrito = new Carrito([{
     codigo: "984395843maldmassd",
     foto: "/url/a/una/foto/del/tablet",
     precio: 85620, 
-    stock: 32
+    stock: 32,
+    cantidad: 1
 }])
 
 // Middleware

@@ -2,18 +2,26 @@ import { Request, Response } from 'express';
 
 import { Item } from './interfaces';
 
+import { instanciaProductos } from './server';
+
 import casual from 'casual';
-import { productosRoutes } from './productosRoutes';
+
+
 
 export class Carrito {
 
     id: any;
+    
     timestamp: string;
+    
     productosEnCarrito: Array<Item>;
 
     constructor(productosEnCarrito: Array<Item>){
+        
         this.id = casual.uuid;
+
         this.timestamp = new Date().toLocaleString();
+        
         this.productosEnCarrito = productosEnCarrito; 
     }
 
@@ -44,6 +52,66 @@ export class Carrito {
     }
 
     agregarProducto = (req: Request, res: Response) => {
+
+        let { id_producto }:any = req.params;
+
+        id_producto = parseInt(id_producto);
+
+        // Chequea si ya esta en el carrito
+        const itemEnCarrito: Item = this.productosEnCarrito.filter(item => item.id === id_producto)[0];
+        
+        // Chequea si esta en la base de datos y si hay stock
+        let itemSeleccionado: Item = instanciaProductos.database
+            .filter(producto => producto.stock !== 0 && producto.id === id_producto)[0]
+
+        if (itemEnCarrito && itemEnCarrito.cantidad) {
+
+            itemEnCarrito.cantidad += 1
+
+            return res.status(200).json({"Producto en carrito - Se agregó una unidad más": itemEnCarrito})
+            
+        } else if (id_producto !== 0 && instanciaProductos.database.length && itemSeleccionado) {
+
+                this.productosEnCarrito.push(itemSeleccionado);
+    
+                itemSeleccionado.cantidad = 1
+    
+                res.status(200).json({"Producto agregado": itemSeleccionado})
+    
+            } else {
+
+                res.status(404).json({Error: "producto inexistente o sin stock"})
+            }
+
+    }
+
+    eliminarProducto = (req: Request, res: Response) => {
+
+        let { id }:any = req.params;
+
+        id = parseInt(id)
+
+        let itemTarget:Item = this.productosEnCarrito.filter(item => (item.id === id))[0]
+
+        if (itemTarget.cantidad === 0){
+
+            return res.status(200).json({ Alerta: 'Producto no encontrado en carrito' })
+
+        } else if (id !== 0 && this.productosEnCarrito.length && itemTarget.cantidad === 1){
+
+            this.productosEnCarrito = this.productosEnCarrito.filter(item => item.id !== itemTarget.id)
+
+            res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
+
+        } else if (itemTarget.cantidad !== undefined && itemTarget.cantidad > 0 ){
+
+            itemTarget.cantidad -= 1
+    
+            return res.status(200).json(
+                    { "Solicitud exitosa": 'Se ha eliminado una unidad del producto en carrito'}
+                )
+
+        }
 
     }
 

@@ -6,5 +6,6 @@ export interface Item {
     codigo: any;
     foto: string;
     precio: number; 
-    stock: number
+    stock: number;
+    cantidad?: number;
 }

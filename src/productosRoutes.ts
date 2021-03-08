@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 
 import { instanciaProductos } from './server'
 
+import { admin } from './server'
+
 export const productosRoutes = express.Router();
 
 productosRoutes.get('/', (req: Request, res: Response) => {
@@ -18,19 +20,26 @@ productosRoutes.get('/:id', (req: Request, res: Response) => {
 
 productosRoutes.post('/', (req: Request, res: Response) => {
     
-    instanciaProductos.agregarProducto(req, res);  
+    admin 
+    ? instanciaProductos.agregarProducto(req, res)
+    : instanciaProductos.solicitudNoAutorizada(req, res)
 
 })
 
 productosRoutes.put('/:id', (req: Request, res: Response) => {
     
-    instanciaProductos.modificarProducto(req, res);
+    admin 
+    ? instanciaProductos.modificarProducto(req, res)
+    : instanciaProductos.solicitudNoAutorizada(req, res)
 
 })
 
 productosRoutes.delete('/:id', (req: Request, res: Response) => {
     
-    instanciaProductos.eliminarProducto(req, res);
+    admin 
+    ? instanciaProductos.eliminarProducto(req, res)
+    : instanciaProductos.solicitudNoAutorizada(req, res)
+    
 
 })
 

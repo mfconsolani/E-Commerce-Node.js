@@ -15,7 +15,7 @@ export class Productos {
 
         this.database.length
         ? res.status(200).json(this.database)
-        : res.status(404).json({error: 'No hay productos cargados'})
+        : res.status(404).json({Error: 'No hay productos cargados'})
 
     }
 
@@ -60,7 +60,7 @@ export class Productos {
                 stock
             }
 
-            this.database = [...this.database, nuevoProducto]
+            this.database.push(nuevoProducto)
 
             res.status(200).json({"Producto cargado exitosamente": nuevoProducto })
 
@@ -108,12 +108,19 @@ export class Productos {
 
             this.database = this.database.filter(item => item.id !== itemTarget.id)
 
-            console.log(this.database);
-
             res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
         }
         
         return res.status(200).json({ Alerta: 'producto no encontrado' })
+
+    }
+
+    solicitudNoAutorizada = (req: Request, res: Response) => {
+        
+        res.status(403).json({ 
+            error : -1, 
+            descripcion: `ruta ${req.originalUrl} método ${req.method} no autorizada`
+        });
 
     }
 }

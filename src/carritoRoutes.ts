@@ -16,16 +16,15 @@ carritoRoutes.get('/:id', (req: Request, res: Response) => {
 
 })
 
-carritoRoutes.post('/', (req: Request, res: Response) => {
+carritoRoutes.post('/:id_producto', (req: Request, res: Response) => {
   
     instanciaCarrito.agregarProducto(req, res);
 
 })
 
-carritoRoutes.put('/', (req: Request, res: Response) => {
-    
-})
 
-carritoRoutes.delete('/', (req: Request, res: Response) => {
+carritoRoutes.delete('/:id', (req: Request, res: Response) => {
     
+    instanciaCarrito.eliminarProducto(req, res);
+
 })
