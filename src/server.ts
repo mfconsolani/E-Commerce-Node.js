@@ -6,13 +6,15 @@ import { carritoRoutes } from './carritoRoutes';
 
 import { Productos } from './constructorProductos';
 
+import { Carrito } from './constructorCarrito';
+
 // Set up
 
 const app:Application = express();
 
 const PORT = process.env.PORT || 8080
 
-export let instancia = new Productos([{
+export let instanciaProductos = new Productos([{
     id: 1, 
     timestamp: "3/7/2021, 6:53:25 PM",
     nombre: "ipod",
@@ -22,6 +24,17 @@ export let instancia = new Productos([{
     precio: 76030, 
     stock: 43
 }]);
+
+export let instanciaCarrito = new Carrito([{
+    id: 2, 
+    timestamp: "3/7/2021, 6:53:25 PM",
+    nombre: "tablet",
+    descripcion: "una tablet cualquiera",
+    codigo: "984395843maldmassd",
+    foto: "/url/a/una/foto/del/tablet",
+    precio: 85620, 
+    stock: 32
+}])
 
 // Middleware
 
