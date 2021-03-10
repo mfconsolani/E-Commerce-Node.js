@@ -39,7 +39,7 @@ export class Carrito {
 
         id = parseInt(id);
 
-        const productoBuscado = this.productosEnCarrito.filter(producto => producto.id === id)[0]
+        const productoBuscado = this.productosEnCarrito.filter(producto => producto.id === id)[0];
 
         if (id !== 0 && this.productosEnCarrito.length && productoBuscado){
             
@@ -78,10 +78,10 @@ export class Carrito {
     
                 res.status(200).json({"Producto agregado": itemSeleccionado})
     
-            } else {
+        } else {
 
-                res.status(404).json({Error: "producto inexistente o sin stock"})
-            }
+            res.status(404).json({Error: "producto inexistente o sin stock"})
+        }
 
     }
 

@@ -31,4 +31,4 @@ carritoRoutes.delete('/:id', (req: Request, res: Response) => {
     
     instanciaCarrito.eliminarProducto(req, res);
 
-});
+}); 
