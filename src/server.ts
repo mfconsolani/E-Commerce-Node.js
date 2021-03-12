@@ -45,7 +45,8 @@ const server = app.listen(process.env.PORT || 8080, () => {
                 element.stock = parseInt(element.stock);
 
             })
-            // instanciaProductos.database = data
+            instanciaProductos.database = newData;
+            console.log(instanciaProductos.database)
             console.log(newData)
             return newData
         }
