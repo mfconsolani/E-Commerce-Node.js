@@ -6,7 +6,9 @@ import { instanciaProductos } from './server';
 
 import casual from 'casual';
 
+import fs from 'fs';
 
+import path from 'path';
 
 export class Carrito {
 
@@ -68,6 +70,8 @@ export class Carrito {
 
             itemEnCarrito.cantidad += 1
 
+            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
+
             return res.status(200).json({"Producto en carrito - Se agregó una unidad más": itemEnCarrito})
             
         } else if (id_producto !== 0 && instanciaProductos.database.length && itemSeleccionado) {
@@ -75,6 +79,8 @@ export class Carrito {
                 this.productosEnCarrito.push(itemSeleccionado);
     
                 itemSeleccionado.cantidad = 1
+
+                fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
     
                 res.status(200).json({"Producto agregado": itemSeleccionado})
     
@@ -101,11 +107,15 @@ export class Carrito {
 
             this.productosEnCarrito = this.productosEnCarrito.filter(item => item.id !== itemTarget.id)
 
+            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
+
             res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
 
         } else if (itemTarget.cantidad !== undefined && itemTarget.cantidad > 1 ){
 
             itemTarget.cantidad -= 1
+
+            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
     
             return res.status(200).json(
                     { "Solicitud exitosa": 'Se ha eliminado una unidad del producto en carrito'}

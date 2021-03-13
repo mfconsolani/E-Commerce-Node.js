@@ -2,6 +2,11 @@ import { Request, Response } from 'express';
 
 import { Item } from './interfaces';
 
+import fs from 'fs';
+
+import path from 'path'
+
+
 export class Productos {
 
     database:Array<Item>;
@@ -62,6 +67,8 @@ export class Productos {
 
             this.database.push(nuevoProducto)
 
+            fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
+
             res.status(200).json({"Producto cargado exitosamente": nuevoProducto })
 
         }
@@ -86,6 +93,8 @@ export class Productos {
             
                 propsToReplace.forEach((prop:string) => itemTarget[prop] = req.body[prop])
                 
+                fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
+
                 return res.status(200).json({"Modificación exitosa": itemTarget})
             } 
 
@@ -107,6 +116,8 @@ export class Productos {
         if (id !== 0 && this.database.length && itemTarget){
 
             this.database = this.database.filter(item => item.id !== itemTarget.id)
+
+            fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
 
             return res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
         }
