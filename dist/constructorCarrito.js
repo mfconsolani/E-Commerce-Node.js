@@ -122,7 +122,7 @@ class Carrito {
                     .catch((err) => console.log(err));
                 res.status(200).json({ "Producto agregado": nuevoProducto });
             }
-            else if (existeEnProductos === undefined) {
+            else if (existeEnProductos === undefined || existeEnProductos.stock === 0) {
                 res.status(404).json({ Error: "producto inexistente o sin stock" });
             }
         });
