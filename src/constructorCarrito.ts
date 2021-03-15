@@ -2,13 +2,10 @@ import { Request, Response } from 'express';
 
 import { Item } from './interfaces';
 
-import { instanciaProductos } from './server';
-
 import casual from 'casual';
 
-import fs from 'fs';
-
-import path from 'path';
+const { options } = require('../options/mysql.js')
+const knex = require('knex')(options);
 
 export class Carrito {
 
@@ -16,106 +13,189 @@ export class Carrito {
     
     timestamp: string;
     
-    productosEnCarrito: Array<Item>;
-
-    constructor(productosEnCarrito: Array<Item>){
+    constructor(){
         
         this.id = casual.uuid;
 
         this.timestamp = new Date().toLocaleString();
-        
-        this.productosEnCarrito = productosEnCarrito; 
-    }
-
-    listarProductos = (req: Request, res: Response) => {
-
-        this.productosEnCarrito.length
-        ? res.status(200).json(this.productosEnCarrito)
-        : res.status(404).json({ Error: 'No hay productos cargados' })
 
     }
 
-    listarProductoIndividual = (req: Request, res: Response) => {
-    
-        let { id }:any = req.params;
+    listarProductos = async (req: Request, res: Response) => {
 
-        id = parseInt(id);
+        const queryItem = async () => {
+            return new Promise ((resolve: any, reject:any) => {
+                try {
 
-        const productoBuscado = this.productosEnCarrito.filter(producto => producto.id === id)[0];
+                    knex.from('carrito').select('*')
+                    .then((rows:any)=> {
+                        const string = JSON.stringify(rows);
+                        const json = JSON.parse(string);
+                        if (json.length === 0){
+                        } else {
+                            for (let row of rows) {
+                                console.log(`${row['id']} | ${row['timestamp']} | ${row['nombre']} | ${row['descripcion']} | ${row['codigo']} | ${row['foto']} | ${row['precio']} | ${row['stock']} | ${row['cantidad']}`)
+                            }
+                        } 
+                        resolve(json)
+                    })
+                    .then((res:any) => res)
+                    .catch((err:Error) => {
+                        console.log(err)
+                    })
+                } catch (err) {
 
-        if (id !== 0 && this.productosEnCarrito.length && productoBuscado){
-            
-            return res.status(200).json({"Producto encontrado": productoBuscado});
-
+                    reject(err);
+                }
+            })           
         }
+            
+        let existance:any = await queryItem()
 
-        return res.status(200).json({ Alerta: "El producto buscado no está en el carrito" });
+        if (existance && existance.length !== 0) {
+            res.status(200).json({"Productos cargados": existance})
+        } else {
+            res.status(404).json({Error: 'No hay productos cargados'})
+        }
+    }
+
+
+    listarProductoIndividual = async (req: Request, res: Response) => {
+
+        let { id }:any = req.params
+        
+        id = parseInt(id)
+
+        let itemQuery = async () => {
+            return new Promise((resolve, reject)=> {
+
+                knex('productos')
+                .where({id: id})
+                .then((value:any) => {
+                    resolve(value);
+                })
+                .catch((err:any)=> console.log(err))
+            })
+        } 
+
+        const existance:any = await itemQuery()
+
+        id !== 0 && existance.length !== 0
+        ? res.status(200).json({"Producto encontrado": existance[0]})
+        : res.status(404).json({ Error: `el producto con id ${id} no existe` })
 
     }
 
-    agregarProducto = (req: Request, res: Response) => {
+
+    agregarProducto = async (req: Request, res: Response) => {
 
         let { id_producto }:any = req.params;
 
         id_producto = parseInt(id_producto);
 
-        // Chequea si ya esta en el carrito
-        const itemEnCarrito: Item = this.productosEnCarrito.filter(item => item.id === id_producto)[0];
+        let itemEnCarrito = () => {
+
+            return new Promise((resolve, reject)=> {
+                knex.from('carrito')
+                .where({'id': id_producto})
+                .then((value:any) => {
+                    resolve(value);
+                })
+                .catch((err:any)=> console.log(err))
+            })
+        }
         
-        // Chequea si esta en la base de datos y si hay stock
-        let itemSeleccionado: Item = instanciaProductos.database
-            .filter(producto => producto.stock !== 0 && producto.id === id_producto)[0]
+        const existeEnCarrito:any = await itemEnCarrito()
 
-        if (itemEnCarrito && itemEnCarrito.cantidad) {
+        let itemEnProductos = async () => {
+            return new Promise((resolve, reject)=> {
+                try {
 
-            itemEnCarrito.cantidad += 1
+                    knex('productos')
+                    .where({'id': id_producto})
+                    .then((value:any) => {
+                        resolve(value[0]);
+                    })
+                    .catch((err:any)=> {reject(err); console.log(err)})
+                
+                } catch (err) {
+                    console.log(err)
+                }
+            })
+        }
+        
+        let existeEnProductos:any = await itemEnProductos();
 
-            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
+        if (
+            id_producto !== 0 
+            && existeEnCarrito.length !== 0 
+            && existeEnCarrito.cantidad !== 0
+            && existeEnProductos !== undefined
+            && existeEnProductos.stock > 0
+            )
+            { await knex('carrito').where('id', '=', id_producto).increment('cantidad', 1)
+            .then(()=> console.log('Nueva unidad agregada'))
+            .catch((err:Error) => console.log(err))
 
-            return res.status(200).json({"Producto en carrito - Se agregó una unidad más": itemEnCarrito})
-            
-        } else if (id_producto !== 0 && instanciaProductos.database.length && itemSeleccionado) {
+            return res.status(200).json("Producto en carrito - Se agregó una unidad más")
+        
+        } else if (
+                id_producto !== 0 
+                && existeEnCarrito.length === 0 
+                && existeEnProductos !== undefined 
+                && existeEnProductos.stock > 0
+            )
+            {   let nuevoProducto = existeEnProductos;
+                nuevoProducto.cantidad = 1;
 
-                this.productosEnCarrito.push(itemSeleccionado);
-    
-                itemSeleccionado.cantidad = 1
+                knex('carrito').insert(nuevoProducto)
+                .then(()=> console.log('Producto agregado a tabla productos', nuevoProducto))
+                .catch((err:Error)=> console.log(err))
 
-                fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
-    
-                res.status(200).json({"Producto agregado": itemSeleccionado})
-    
-        } else {
+                res.status(200).json({"Producto agregado": nuevoProducto})
 
+
+        } else if (existeEnProductos === undefined || existeEnProductos.stock === 0){
             res.status(404).json({Error: "producto inexistente o sin stock"})
         }
-
     }
 
-    eliminarProducto = (req: Request, res: Response) => {
+    eliminarProducto = async (req: Request, res: Response) => {
 
         let { id }:any = req.params;
 
         id = parseInt(id)
 
-        let itemTarget:Item = this.productosEnCarrito.filter(item => (item.id === id))[0]
+        let itemTarget = () => {
 
-        if (!itemTarget){
+            return new Promise((resolve, reject)=> {
 
+                knex.from('carrito')
+                .where({'id': id})
+                .then((value:any) => resolve(value[0]))
+                .catch((err:any)=> console.log(err))
+            
+            })
+        }
+        
+        const existeEnCarrito:any = await itemTarget()
+
+        if (existeEnCarrito === undefined){
             return res.status(404).json({ Error: 'Producto no encontrado en carrito' })
 
-        } else if (id !== 0 && this.productosEnCarrito.length && itemTarget.cantidad === 1){
-
-            this.productosEnCarrito = this.productosEnCarrito.filter(item => item.id !== itemTarget.id)
-
-            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
+        } else if (id !== 0 && existeEnCarrito.cantidad === 1){
+            
+            await knex.from('carrito').where("id", "=", id).del()
+            .then(() => console.log(`Producto con ${id} eliminado`))
+            .catch((err:Error)=> {console.log(err); throw err})
 
             res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
 
-        } else if (itemTarget.cantidad !== undefined && itemTarget.cantidad > 1 ){
+        } else if (id !== 0 && existeEnCarrito.cantidad > 1 ){
 
-            itemTarget.cantidad -= 1
-
-            fs.writeFileSync(path.join(__dirname, '../carrito.txt'), JSON.stringify(this.productosEnCarrito));
+            await knex('carrito').where('id', '=', id).decrement('cantidad', 1)
+            .then(()=> console.log('Se ha eliminado una unidad del producto en carrito'))
+            .catch((err:Error) => console.log(err))
     
             return res.status(200).json(
                     { "Solicitud exitosa": 'Se ha eliminado una unidad del producto en carrito'}

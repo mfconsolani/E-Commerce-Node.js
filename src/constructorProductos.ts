@@ -2,60 +2,102 @@ import { Request, Response } from 'express';
 
 import { Item } from './interfaces';
 
-import fs from 'fs';
-
-import path from 'path'
-
+const { options } = require('../options/mysql.js')
+const knex = require('knex')(options);
 
 export class Productos {
 
-    database:Array<Item>;
+    listarProductos = async (req: Request, res: Response) => {
 
-    constructor(database:Array<Item>){
+        const queryItem = async () => {
+            return new Promise ((resolve: any, reject:any) => {
+                try {
 
-        this.database = database;
+                    knex.from('productos').select('*')
+                    .then((rows:any)=> {
+                        const string = JSON.stringify(rows);
+                        const json = JSON.parse(string);
+                        if (json.length === 0){
+                        } else {
+                            for (let row of rows) {
+                                console.log(`${row['id']} | ${row['timestamp']} | ${row['nombre']} | ${row['descripcion']} | ${row['codigo']} | ${row['foto']} | ${row['precio']} | ${row['stock']}`)
+                            }
+                        } 
+                        resolve(json)
+                    })
+                    .then((res:any) => res)
+                    .catch((err:Error) => {
+                        console.log(err)
+                    })
+                } catch (err) {
+
+                    reject(err);
+                }
+            })           
+        }
+            
+        let existance:any = await queryItem()
+
+        if (existance && existance.length !== 0) {
+            res.status(200).json({"Productos cargados": existance})
+        } else {
+            res.status(404).json({Error: 'No hay productos cargados'})
+        }
     }
 
-    listarProductos = (req: Request, res: Response) => {
-
-        this.database.length
-        ? res.status(200).json(this.database)
-        : res.status(404).json({Error: 'No hay productos cargados'})
-
-    }
-
-    listarProductoIndividual = (req: Request, res: Response) => {
+    listarProductoIndividual = async (req: Request, res: Response) => {
         
         let { id }:any = req.params
         
         id = parseInt(id)
 
-        const productoRequerido = this.database.filter(producto => producto.id === id)[0]
+        let itemQuery = async () => {
+            return new Promise((resolve, reject)=> {
 
-        id !== 0 && this.database.length && productoRequerido
-        ? res.status(200).json(productoRequerido)
+                knex('productos')
+                .where({id: id})
+                .then((value:any) => {
+                    resolve(value);
+                })
+                .catch((err:any)=> console.log(err))
+            })
+        } 
+
+        const existance:any = await itemQuery()
+
+        id !== 0 && existance.length !== 0
+        ? res.status(200).json(existance[0])
         : res.status(404).json({ Error: `el producto con id ${id} no existe` })
 
     }
 
-    agregarProducto = (req: Request, res: Response) => {
+    agregarProducto = async (req: Request, res: Response) => {
 
         let { nombre, descripcion, codigo, foto, precio, stock }:any = req.body;
 
-        let itemEnStock: Item = this.database.filter(producto => (producto.codigo === codigo))[0]
+        let itemEnStockFromDB = async () => {
+            return new Promise((resolve, reject)=> {
 
-        if (this.database.length && itemEnStock) {
+                knex('productos')
+                .where({codigo: codigo})
+                .then((value:any) => {
+                    resolve(value);
+                })
+                .catch((err:any)=> console.log(err))
+            })
+        } 
 
-            res.status(404).json({"Error - Producto ya existente": itemEnStock})
+        const existance:any = await itemEnStockFromDB()
+
+        if (existance.length !== 0) {
+
+            res.status(404).json({"Error - Producto ya existente": existance[0]})
 
         } else {
             
-            const id:number = this.database.length == 0 ? 1 : this.database.slice(-1)[0].id +1
-
             const timestamp:string = new Date().toLocaleString()
             
-            const nuevoProducto:Item = {
-                id,
+            const nuevoProducto = {
                 timestamp,
                 nombre,
                 descripcion,
@@ -65,62 +107,110 @@ export class Productos {
                 stock
             }
 
-            this.database.push(nuevoProducto)
-
-            fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
+            knex('productos').insert(nuevoProducto)
+            .then(()=> console.log('Producto agregado a tabla productos', nuevoProducto))
+            .catch((err:Error)=> console.log(err))
 
             res.status(200).json({"Producto cargado exitosamente": nuevoProducto })
 
         }
     }
 
-    modificarProducto = (req: Request, res: Response) => {
+    modificarProducto = async (req: Request, res: Response) => {
         
         let { id }:any = req.params;
 
         id = parseInt(id)
 
-        let itemTarget:any = this.database.filter(item => (item.id === id))[0]
+        let itemQuery = () => {
+            return new Promise((resolve, reject:any)=> {
 
-        if (id !== 0 && this.database.length && itemTarget){
+                knex('productos')
+                .where({'id': id})
+                .then((value:any) => {
+                    resolve(value[0]);
+                })
+                .catch((err:any)=> {
+                    console.log(err)
+                })
+            })
+        } 
+        
+        let existance:any = await itemQuery()
+        
+        if (id !== 0 && existance && existance.length !== 0){
             
             const propsToReplace = Object
                 .keys(req.body)
-                .filter((key:string) => itemTarget[key] !== req.body[key])
-
-            
+                .filter((key:string) => existance[key] !== req.body[key])
+                
             if (propsToReplace.length) {
             
-                propsToReplace.forEach((prop:string) => itemTarget[prop] = req.body[prop])
-                
-                fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
+                const updateProduct:any = () => {
+                    return new Promise((resolve:any, reject) => {
 
-                return res.status(200).json({"Modificación exitosa": itemTarget})
+                        propsToReplace.forEach(async (prop:any) => {
+                            
+                            knex('productos')
+                            .where(prop,'=', existance[prop])
+                            .update(prop, req.body[prop])
+                            .then((value:any)=> {
+                                console.log(`Dato modificado: ${prop}: ${req.body[prop]}`)
+                            })
+                            .catch((err:Error) => console.log(err))
+                            resolve();
+                        })
+                    })
+                }
+                
+                    await updateProduct();
+
+                return res.status(200).json({"Estado de la modificación": "Exitosa"})
             } 
 
             return res.status(200).json({ Alerta: "Ningun dato ingresado difiere de los datos actuales" })
             
+        } else if (!existance) {
+
+            return res.status(200).json({ Alerta: 'producto no encontrado' })
         }
 
-        return res.status(200).json({ Alerta: 'producto no encontrado' })
     }
 
-    eliminarProducto = (req: Request, res: Response) => {
+    eliminarProducto = async (req: Request, res: Response) => {
 
         let { id }:any = req.params;
 
         id = parseInt(id)
 
-        let itemTarget:Item = this.database.filter(item => (item.id === id))[0]
+        let itemQuery = () => {
+            return new Promise((resolve, reject:any)=> {
 
-        if (id !== 0 && this.database.length && itemTarget){
+                knex('productos')
+                .where({'id': id})
+                .then((value:any) => {
+                    resolve(value[0]);
+                })
+                .catch((err:any)=> {
+                    console.log(err)
+                })
+            })
+        }
 
-            this.database = this.database.filter(item => item.id !== itemTarget.id)
+        let existance:any = await itemQuery()
 
-            fs.writeFileSync(path.join(__dirname, '../productos.txt'), JSON.stringify(this.database));
+        if (id !== 0 && existance && existance.length !== 0){
+
+            await knex.from('productos').where("id", "=", id).del()
+            .then(() => console.log(`Producto con ${id} eliminado`))
+            .catch((err:Error)=> {console.log(err); throw err})
+
+            await knex.from('carrito').where("id", "=", id).del()
+            .then(() => console.log(`Producto con ${id} eliminado del carrito del usuario`))
+            .catch((err:Error)=> {console.log(err); throw err})
 
             return res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
-        }
+        } 
         
         return res.status(200).json({ Alerta: 'producto no encontrado' })
 

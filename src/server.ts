@@ -8,9 +8,7 @@ import { Productos } from './constructorProductos';
 
 import { Carrito } from './constructorCarrito';
 
-import { loadPersistedProductos, loadPersistedCarrito } from './helperFunctions';
-
-import fs from 'fs';
+import { checkIfTable, createTableCarrito, createTableProductos } from './createTable';
 
 // Set up
 
@@ -18,9 +16,10 @@ const app:Application = express();
 
 export const admin = true;
 
-export let instanciaProductos = new Productos([]);
+export let instanciaProductos = new Productos();
 
-export let instanciaCarrito = new Carrito([])
+export let instanciaCarrito = new Carrito()
+
 
 // Middleware
 
@@ -34,15 +33,9 @@ app.use('/carrito', carritoRoutes);
 // Server
 
 const server = app.listen(process.env.PORT || 8080, () => {
-
-    instanciaProductos.database = loadPersistedProductos();
-    instanciaCarrito.productosEnCarrito = loadPersistedCarrito()
-    
-    console.log('Productos cargados:', instanciaProductos.database);
-    console.log('Carrito:', instanciaCarrito.productosEnCarrito);
-
+    checkIfTable(createTableProductos, 'productos');
+    checkIfTable(createTableCarrito, 'carrito');
     console.log(`Server listening on port ${process.env.PORT || 8080}`)
-
 });
 
 
