@@ -38,15 +38,10 @@ export class Carrito {
     listarProductoIndividual = (req: Request, res: Response) => {
     
         let { id }:any = req.params;
-
         id = parseInt(id);
-
         const productoBuscado = this.productosEnCarrito.filter(producto => producto.id === id)[0];
-
         if (id !== 0 && this.productosEnCarrito.length && productoBuscado){
-            
             return res.status(200).json({"Producto encontrado": productoBuscado});
-
         }
 
         return res.status(200).json({ Alerta: "El producto buscado no está en el carrito" });
