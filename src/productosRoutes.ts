@@ -10,13 +10,13 @@ productosRoutes.get('/', (req: Request, res: Response) => {
 
     instanciaProductos.listarProductos(req, res);    
 
-})
+});
 
 productosRoutes.get('/:id', (req: Request, res: Response) => {
     
     instanciaProductos.listarProductoIndividual(req, res);
 
-})
+});
 
 productosRoutes.post('/', (req: Request, res: Response) => {
     
@@ -24,7 +24,7 @@ productosRoutes.post('/', (req: Request, res: Response) => {
     ? instanciaProductos.agregarProducto(req, res)
     : instanciaProductos.solicitudNoAutorizada(req, res)
 
-})
+});
 
 productosRoutes.put('/:id', (req: Request, res: Response) => {
     
@@ -32,7 +32,7 @@ productosRoutes.put('/:id', (req: Request, res: Response) => {
     ? instanciaProductos.modificarProducto(req, res)
     : instanciaProductos.solicitudNoAutorizada(req, res)
 
-})
+});
 
 productosRoutes.delete('/:id', (req: Request, res: Response) => {
     
@@ -41,5 +41,5 @@ productosRoutes.delete('/:id', (req: Request, res: Response) => {
     : instanciaProductos.solicitudNoAutorizada(req, res)
     
 
-})
+});
 
