@@ -20,7 +20,7 @@ export const admin = true;
 
 export let instanciaProductos = new Productos([]);
 
-export let instanciaCarrito = new Carrito([])
+export let instanciaCarrito = new Carrito([]);
 
 // Middleware
 
