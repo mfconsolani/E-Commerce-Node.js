@@ -10,6 +10,8 @@ import { Carrito } from './constructorCarrito';
 
 import { checkIfTable, createTableCarrito, createTableProductos } from './createTable';
 
+import mongoose from 'mongoose';
+
 // Set up
 
 const app:Application = express();
@@ -29,6 +31,24 @@ app.use('/productos', productosRoutes);
 
 app.use('/carrito', carritoRoutes);
 
+
+// Mongoose
+
+CRUD()
+
+async function CRUD() {
+    try {
+        const URL = 'mongodb://localhost:27017/ecommerce'
+
+        let response = await mongoose.connect(URL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        })
+        console.log('Conectado a MongoDB')
+    } catch (e) {
+        console.log(e)
+    }
+}
 
 // Server
 
