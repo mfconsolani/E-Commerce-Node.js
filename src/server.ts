@@ -10,6 +10,8 @@ import { Carrito } from './constructorCarrito';
 
 import { loadPersistedProductos, loadPersistedCarrito } from './helperFunctions';
 
+import morgan from 'morgan'
+
 import fs from 'fs';
 
 // Set up
@@ -23,6 +25,8 @@ export let instanciaProductos = new Productos([]);
 export let instanciaCarrito = new Carrito([]);
 
 // Middleware
+
+app.use(morgan('dev'))
 
 app.use(express.json());
 
