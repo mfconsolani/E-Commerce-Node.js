@@ -24,8 +24,8 @@ exports.productosRoutes.put('/:id', (req, res) => {
         ? server_1.instanciaProductos.modificarProducto(req, res)
         : server_1.instanciaProductos.solicitudNoAutorizada(req, res);
 });
-// productosRoutes.delete('/:id', (req: Request, res: Response) => {
-//     admin 
-//     ? instanciaProductos.eliminarProducto(req, res)
-//     : instanciaProductos.solicitudNoAutorizada(req, res)
-// })
+exports.productosRoutes.delete('/:id', (req, res) => {
+    server_2.admin
+        ? server_1.instanciaProductos.eliminarProducto(req, res)
+        : server_1.instanciaProductos.solicitudNoAutorizada(req, res);
+});

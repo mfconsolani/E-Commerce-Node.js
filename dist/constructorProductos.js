@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Productos = void 0;
 const productosModel_1 = require("./productosModel");
+const carritoModel_1 = require("./carritoModel");
 class Productos {
     constructor() {
         this.listarProductos = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -66,71 +67,36 @@ class Productos {
             id = parseInt(id);
             let itemInStock = yield productosModel_1.Producto.find({ id: id });
             let existance = itemInStock[0];
-            // console.log(existance)
             if (id !== 0 && existance && existance.length !== 0) {
                 const propsToReplace = Object
                     .keys(req.body)
                     .filter((key) => existance[key] !== req.body[key]);
-                // const propsToReplace = ['precio'] 
                 if (propsToReplace.length) {
-                    propsToReplace.forEach((prop) => __awaiter(this, void 0, void 0, function* () {
-                        console.log('{id:', id, '}', ',', '{$set', '{', prop, ":", req.body[prop], '}', '}');
-                        // let propi = prop.toString()
-                        // const update = { $set: { prop: req.body[prop] } };
-                        const update = yield productosModel_1.Producto.updateOne({ id: 2 }, { $set: { prop: req.body[prop] } });
-                        // console.log(`Dato modificado: ${prop}: ${req.body[prop]}`)
-                    }));
-                    // const updateProduct:any = () => {
-                    //     return new Promise((resolve:any, reject) => {
-                    //         propsToReplace.forEach(async (prop:any) => {
-                    //             knex('productos')
-                    //             .where(prop,'=', existance[prop])
-                    //             .update(prop, req.body[prop])
-                    //             .then((value:any)=> {
-                    //                 console.log(`Dato modificado: ${prop}: ${req.body[prop]}`)
-                    //             })
-                    //             .catch((err:Error) => console.log(err))
-                    //             resolve();
-                    //         })
-                    //     })
-                    // }
-                    // await updateProduct();
+                    let update = {};
+                    propsToReplace.forEach((prop) => __awaiter(this, void 0, void 0, function* () { return update[prop] = req.body[prop]; }));
+                    const up = yield productosModel_1.Producto.updateOne({ id: id }, { $set: update });
                     const productoModificado = yield productosModel_1.Producto.find({ id: id });
-                    return res.status(200).json({ "Modificacion exitosa": 'si' });
+                    return res.status(200).json({ "Modificacion exitosa": productoModificado });
                 }
                 return res.status(200).json({ Alerta: "Ningun dato ingresado difiere de los datos actuales" });
             }
             else if (!existance) {
-                return res.status(200).json({ Alerta: 'producto no encontrado' });
+                return res.status(200).json({ Alerta: 'Producto no encontrado' });
             }
         });
-        //     eliminarProducto = async (req: Request, res: Response) => {
-        //         let { id }:any = req.params;
-        //         id = parseInt(id)
-        //         let itemQuery = () => {
-        //             return new Promise((resolve, reject:any)=> {
-        //                 knex('productos')
-        //                 .where({'id': id})
-        //                 .then((value:any) => {
-        //                     resolve(value[0]);
-        //                 })
-        //                 .catch((err:any)=> {
-        //                     console.log(err)
-        //                 })
-        //             })
-        //         }
-        //         let existance:any = await itemQuery()
-        //         if (id !== 0 && existance && existance.length !== 0){
-        //             await knex.from('productos').where("id", "=", id).del()
-        //             .then(() => console.log(`Producto con ${id} eliminado`))
-        //             .catch((err:Error)=> {console.log(err); throw err})
-        //             await knex.from('carrito').where("id", "=", id).del()
-        //             .then(() => console.log(`Producto con ${id} eliminado del carrito del usuario`))
-        //             .catch((err:Error)=> {console.log(err); throw err})
-        //             return res.status(200).json({"Solicitud exitosa": `Producto con id ${id} eliminado`})
-        //         } 
-        //         return res.status(200).json({ Alerta: 'producto no encontrado' })
-        //     }
+        this.eliminarProducto = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            let { id } = req.params;
+            id = parseInt(id);
+            let itemInStock = yield productosModel_1.Producto.find({ id: id });
+            let existance = itemInStock[0];
+            if (id !== 0 && existance && existance.length !== 0) {
+                const deletedItemFromProducto = yield productosModel_1.Producto.findOneAndDelete({ id: id });
+                // Falta eliminar el producto del carrito
+                const deletedItemFromCarrito = yield carritoModel_1.Carro.findOneAndDelete({ id: id });
+                return res.status(200).json({ "Producto eliminado": deletedItemFromProducto });
+            }
+            return res.status(200).json({ Alerta: 'producto no encontrado' });
+        });
         this.solicitudNoAutorizada = (req, res) => {
             res.status(403).json({
                 error: -1,

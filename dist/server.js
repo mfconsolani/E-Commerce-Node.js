@@ -12,22 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.instanciaProductos = exports.admin = void 0;
+exports.instanciaCarrito = exports.instanciaProductos = exports.admin = void 0;
 const express_1 = __importDefault(require("express"));
 const productosRoutes_1 = require("./productosRoutes");
-// import { carritoRoutes } from './carritoRoutes';
+const carritoRoutes_1 = require("./carritoRoutes");
 const constructorProductos_1 = require("./constructorProductos");
-// import { Carrito } from './constructorCarrito';
+const constructorCarrito_1 = require("./constructorCarrito");
 const mongoose_1 = __importDefault(require("mongoose"));
 // Set up
 const app = express_1.default();
 exports.admin = true;
 exports.instanciaProductos = new constructorProductos_1.Productos();
-// export let instanciaCarrito = new Carrito()
+exports.instanciaCarrito = new constructorCarrito_1.Carrito();
 // Middleware
 app.use(express_1.default.json());
 app.use('/productos', productosRoutes_1.productosRoutes);
-// app.use('/carrito', carritoRoutes);
+app.use('/carrito', carritoRoutes_1.carritoRoutes);
 // Mongoose
 CRUD();
 function CRUD() {
@@ -36,7 +36,8 @@ function CRUD() {
             const URL = 'mongodb://localhost:27017/ecommerce';
             let response = yield mongoose_1.default.connect(URL, {
                 useNewUrlParser: true,
-                useUnifiedTopology: true
+                useUnifiedTopology: true,
+                useFindAndModify: false
             });
             console.log('Conectado a MongoDB');
         }
