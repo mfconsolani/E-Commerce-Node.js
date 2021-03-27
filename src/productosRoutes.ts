@@ -40,6 +40,5 @@ productosRoutes.delete('/:id', (req: Request, res: Response) => {
     ? instanciaProductos.eliminarProducto(req, res)
     : instanciaProductos.solicitudNoAutorizada(req, res)
     
-
 })
 

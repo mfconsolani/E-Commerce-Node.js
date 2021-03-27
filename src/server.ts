@@ -8,8 +8,6 @@ import { Productos } from './constructorProductos';
 
 import { Carrito } from './constructorCarrito';
 
-import { checkIfTable, createTableCarrito, createTableProductos } from './createTable';
-
 import mongoose from 'mongoose';
 
 // Set up
@@ -42,7 +40,8 @@ async function CRUD() {
 
         let response = await mongoose.connect(URL, {
             useNewUrlParser: true,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            useFindAndModify: false
         })
         console.log('Conectado a MongoDB')
     } catch (e) {
@@ -53,8 +52,6 @@ async function CRUD() {
 // Server
 
 const server = app.listen(process.env.PORT || 8080, () => {
-    checkIfTable(createTableProductos, 'productos');
-    checkIfTable(createTableCarrito, 'carrito');
     console.log(`Server listening on port ${process.env.PORT || 8080}`)
 });
 

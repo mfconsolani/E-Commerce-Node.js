@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const productoSchema = new Schema({
+const carritoSchema = new Schema({
     id: { type: Number, required: true },
     timestamp: { type: String, required: true },
     nombre: { type: String, required: true },
@@ -10,7 +10,8 @@ const productoSchema = new Schema({
     codigo: { type: String, required: true },
     foto: { type: String, required: true },
     precio: { type: Number, required: true }, 
-    stock: { type: Number, required: true }
-})
+    stock: { type: Number, required: true },
+    cantidad: { type: Number , required: true}
+}, {collection: 'carrito'})
 
-export const Producto = mongoose.model('Producto', productoSchema);
+export const Carro = mongoose.model('Carro', carritoSchema);
