@@ -14,6 +14,9 @@ exports.productosRoutes.get('/', (req, res) => {
 exports.productosRoutes.get('/:id', (req, res) => {
     server_1.instanciaProductos.listarProductoIndividual(req, res);
 });
+exports.productosRoutes.get('/:nombre', (req, res) => {
+    server_1.instanciaProductos.listarProductoPorNombre(req, res);
+});
 exports.productosRoutes.post('/', (req, res) => {
     server_2.admin
         ? server_1.instanciaProductos.agregarProducto(req, res)

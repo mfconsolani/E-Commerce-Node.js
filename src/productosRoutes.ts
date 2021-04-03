@@ -7,15 +7,15 @@ import { admin } from './server'
 export const productosRoutes = express.Router();
 
 productosRoutes.get('/', (req: Request, res: Response) => {
-
     instanciaProductos.listarProductos(req, res);    
-
 })
 
-productosRoutes.get('/:id', (req: Request, res: Response) => {
-    
+productosRoutes.get('/:id', (req: Request, res: Response) => {    
     instanciaProductos.listarProductoIndividual(req, res);
+})
 
+productosRoutes.get('/:nombre', (req: Request, res: Response) => {
+    instanciaProductos.listarProductoPorNombre(req, res)
 })
 
 productosRoutes.post('/', (req: Request, res: Response) => {

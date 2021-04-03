@@ -15,8 +15,44 @@ const carritoModel_1 = require("./carritoModel");
 class Productos {
     constructor() {
         this.listarProductos = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            let existance = yield productosModel_1.Producto.find();
-            if (existance && existance.length !== 0) {
+            let existQueryStrings = Object.keys(req.query).length;
+            const existance = yield productosModel_1.Producto.find();
+            if (existQueryStrings) {
+                let nombre = req.query.nombre || undefined;
+                let minPrice = req.query.minPrice || 0;
+                let maxPrice = req.query.maxPrice || Infinity;
+                if (nombre !== undefined) {
+                    let findByAllQueries = yield productosModel_1.Producto.find({ $and: [
+                            { precio: { $gte: minPrice } },
+                            { precio: { $lte: maxPrice } },
+                            { nombre: nombre }
+                        ]
+                    }).then((value) => {
+                        value.length === 0
+                            ? res.status(404).send(`Busqueda sin resultados para los siguienes filtros: 
+                        nombre: ${nombre || 'sin especificar'} 
+                        precio mínimo: ${minPrice}
+                        precio máximo: ${maxPrice === Infinity ? 'precio máximo posible' : maxPrice}`)
+                            : res.status(200).send(value);
+                    });
+                }
+                else if (nombre === undefined) {
+                    let findByPrice = yield productosModel_1.Producto.find({ $and: [
+                            { precio: { $gte: minPrice } },
+                            { precio: { $lte: maxPrice } },
+                        ]
+                    }).then((value) => {
+                        value.length === 0
+                            ? res.status(404).send(`Busqueda sin resultados para los siguienes filtros: 
+                    nombre: ${nombre || 'sin especificar'} 
+                    precio mínimo: ${minPrice}
+                    precio máximo: ${maxPrice === Infinity ? 'precio máximo posible' : maxPrice}`)
+                            : res.status(200).send(value);
+                    });
+                }
+            }
+            else if (!existQueryStrings && existance.length !== 0) {
+                const existance = yield productosModel_1.Producto.find();
                 res.status(200).json({ "Productos cargados": existance });
             }
             else {
@@ -31,6 +67,11 @@ class Productos {
                 ? res.status(200).json(existance[0])
                 : res.status(404).json({ Error: `el producto con id ${id} no existe` });
         });
+        this.listarProductoPorNombre = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            let queryParams = req.query;
+            console.log(queryParams);
+            res.status(200).send(queryParams);
+        });
         this.agregarProducto = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let { nombre, descripcion, codigo, foto, precio, stock } = req.body;
             let existance = yield productosModel_1.Producto.find({ codigo: codigo });
@@ -39,27 +80,31 @@ class Productos {
             }
             else {
                 const timestamp = new Date().toLocaleString();
-                const lastItemInDb = yield productosModel_1.Producto.find().sort({ id: 1 }).limit(1);
-                let id;
-                if (lastItemInDb.length === 0) {
-                    id = 1;
-                }
-                else {
-                    id = lastItemInDb[0].id + 1;
-                }
-                const nuevoProducto = {
-                    id,
-                    timestamp,
-                    nombre,
-                    descripcion,
-                    codigo,
-                    foto,
-                    precio,
-                    stock
-                };
-                const productoSaveModel = new productosModel_1.Producto(nuevoProducto);
+                const newItem = yield productosModel_1.Producto.find()
+                    .sort({ id: -1 })
+                    .limit(1)
+                    .then((value) => {
+                    let id;
+                    if (value.length === 0) {
+                        id = 1;
+                    }
+                    else {
+                        id = value[0].id + 1;
+                    }
+                    return {
+                        id,
+                        timestamp,
+                        nombre,
+                        descripcion,
+                        codigo,
+                        foto,
+                        precio,
+                        stock
+                    };
+                });
+                const productoSaveModel = new productosModel_1.Producto(newItem);
                 yield productoSaveModel.save();
-                res.status(200).json({ "Producto cargado exitosamente": nuevoProducto });
+                res.status(200).json({ "Producto cargado exitosamente": newItem });
             }
         });
         this.modificarProducto = (req, res) => __awaiter(this, void 0, void 0, function* () {
