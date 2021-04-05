@@ -10,12 +10,14 @@ productosRoutes.get('/', (req: Request, res: Response) => {
     instanciaProductos.listarProductos(req, res);    
 })
 
-productosRoutes.get('/:id', (req: Request, res: Response) => {    
-    instanciaProductos.listarProductoIndividual(req, res);
-})
-
-productosRoutes.get('/:nombre', (req: Request, res: Response) => {
-    instanciaProductos.listarProductoPorNombre(req, res)
+productosRoutes.get('/:id', (req: Request, res: Response) => {
+    let { id } = req.params 
+    id = String(id)
+    if (id === 'vista-test') {
+        instanciaProductos.mockGenerator(req, res);
+    } else {
+        instanciaProductos.listarProductoIndividual(req, res);
+    }
 })
 
 productosRoutes.post('/', (req: Request, res: Response) => {

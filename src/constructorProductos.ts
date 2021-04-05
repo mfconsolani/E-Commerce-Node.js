@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-
 import { Producto } from './productosModel';
-
 import { Carro } from './carritoModel'
+import { fakeGenerator } from './utils'
 
 export class Productos {
 
@@ -63,11 +62,12 @@ export class Productos {
         : res.status(404).json({ Error: `el producto con id ${id} no existe` })
     }
 
-    listarProductoPorNombre = async (req: Request, res: Response) => {
-        let queryParams = req.query
-        console.log(queryParams)
-        
-        res.status(200).send(queryParams);
+    mockGenerator = (req: Request, res:Response) => {
+        let quantityOfObject:Number = Number(req.query.cant || 10) 
+        let fakeArray = fakeGenerator(quantityOfObject)
+        fakeArray.length > 0 
+        ? res.status(200).json({Productos: fakeArray})
+        : res.status(404).json({Error: 'No hay productos cargados'})
     }
 
     agregarProducto = async (req: Request, res: Response) => {

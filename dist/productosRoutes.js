@@ -12,10 +12,14 @@ exports.productosRoutes.get('/', (req, res) => {
     server_1.instanciaProductos.listarProductos(req, res);
 });
 exports.productosRoutes.get('/:id', (req, res) => {
-    server_1.instanciaProductos.listarProductoIndividual(req, res);
-});
-exports.productosRoutes.get('/:nombre', (req, res) => {
-    server_1.instanciaProductos.listarProductoPorNombre(req, res);
+    let { id } = req.params;
+    id = String(id);
+    if (id === 'vista-test') {
+        server_1.instanciaProductos.mockGenerator(req, res);
+    }
+    else {
+        server_1.instanciaProductos.listarProductoIndividual(req, res);
+    }
 });
 exports.productosRoutes.post('/', (req, res) => {
     server_2.admin

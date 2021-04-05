@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Productos = void 0;
 const productosModel_1 = require("./productosModel");
 const carritoModel_1 = require("./carritoModel");
+const utils_1 = require("./utils");
 class Productos {
     constructor() {
         this.listarProductos = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -67,11 +68,13 @@ class Productos {
                 ? res.status(200).json(existance[0])
                 : res.status(404).json({ Error: `el producto con id ${id} no existe` });
         });
-        this.listarProductoPorNombre = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            let queryParams = req.query;
-            console.log(queryParams);
-            res.status(200).send(queryParams);
-        });
+        this.mockGenerator = (req, res) => {
+            let quantityOfObject = Number(req.query.cant || 10);
+            let fakeArray = utils_1.fakeGenerator(quantityOfObject);
+            fakeArray.length > 0
+                ? res.status(200).json({ Productos: fakeArray })
+                : res.status(404).json({ Error: 'No hay productos cargados' });
+        };
         this.agregarProducto = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let { nombre, descripcion, codigo, foto, precio, stock } = req.body;
             let existance = yield productosModel_1.Producto.find({ codigo: codigo });
